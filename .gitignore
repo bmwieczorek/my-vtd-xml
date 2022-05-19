@@ -1,0 +1,12 @@
+# building
+target
+
+# Eclipse
+.project
+.classpath
+.settings
+
+# Except IDEA run configurations
+*.iml
+.idea/*
+!/.idea/runConfigurations
