@@ -10,19 +10,31 @@ import java.util.function.Function;
 
 public class VtdXmlParser {
 
+    public static class FieldXpathMappingEntry {
+        String field;
+        String xpath;
+        Class<?> clazz;
+
+        public FieldXpathMappingEntry(String field, String xpath, Class<?> clazz) {
+            this.field = field;
+            this.xpath = xpath;
+            this.clazz = clazz;
+        }
+    }
+
+    public interface CustomFieldParser {
+        Object parse(String field, String xpath, AutoPilot ap, VTDNav nav) throws VTDException;
+    }
+
     private final Map<Class<?>, Function<String, ?>> typeTransformations = Map.of(
             String.class, s -> s,
             Integer.class, Integer::parseInt
     );
 
-    private final List<MappingEntry> mapping;
+    private final List<FieldXpathMappingEntry> fieldXpathMappingEntries;
 
-    public VtdXmlParser(List<MappingEntry> mapping) {
-        this.mapping = mapping;
-    }
-
-    public interface CustomFieldParser {
-        Object parse(String field, String xpath, AutoPilot ap, VTDNav nav) throws VTDException;
+    public VtdXmlParser(List<FieldXpathMappingEntry> fieldXpathMappingEntries) {
+        this.fieldXpathMappingEntries = fieldXpathMappingEntries;
     }
 
     public Map<String, Object> parseFile(String xmlFilePath) {
@@ -43,7 +55,7 @@ public class VtdXmlParser {
 
         Map<String, Object> result = new HashMap<>();
 
-        mapping.forEach(entry -> {
+        fieldXpathMappingEntries.forEach(entry -> {
             AutoPilot ap = new AutoPilot(nav);
             try {
                 if (CustomFieldParser.class.isAssignableFrom(entry.clazz)) {
@@ -69,17 +81,6 @@ public class VtdXmlParser {
         });
 
         return result;
-    }
-
-    public static class MappingEntry{
-        String field;
-        String xpath;
-        Class<?> clazz;
-        public MappingEntry(String field, String xpath, Class<?> clazz) {
-            this.field = field;
-            this.xpath = xpath;
-            this.clazz = clazz;
-        }
     }
 
 }

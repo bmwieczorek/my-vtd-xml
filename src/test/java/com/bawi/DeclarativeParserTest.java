@@ -11,12 +11,12 @@ import java.util.Map;
 
 public class DeclarativeParserTest {
 
-    private final List<VtdXmlParser.MappingEntry> mapping = List.of(
-            new VtdXmlParser.MappingEntry("college_first_staff_dep_name", "staff[1]/@dep_name", String.class),
-            new VtdXmlParser.MappingEntry("college_first_staff_dep_name_length", "staff[1]/@dep_name", StringLengthParser.class),
-            new VtdXmlParser.MappingEntry("staff_basic_salary_sum", "staff/salary/basic", SumValuesParser.class),
-            new VtdXmlParser.MappingEntry("staff_id_attr_sum", "staff/@id", SumValuesParser.class),
-            new VtdXmlParser.MappingEntry("college_id", "@id", Integer.class)
+    private final List<VtdXmlParser.FieldXpathMappingEntry> mapping = List.of(
+            new VtdXmlParser.FieldXpathMappingEntry("college_first_staff_dep_name", "staff[1]/@dep_name", String.class),
+            new VtdXmlParser.FieldXpathMappingEntry("college_first_staff_dep_name_length", "staff[1]/@dep_name", StringLengthParser.class),
+            new VtdXmlParser.FieldXpathMappingEntry("staff_basic_salary_sum", "staff/salary/basic", SumValuesParser.class),
+            new VtdXmlParser.FieldXpathMappingEntry("staff_id_attr_sum", "staff/@id", SumValuesParser.class),
+            new VtdXmlParser.FieldXpathMappingEntry("college_id", "@id", Integer.class)
     );
     private final VtdXmlParser vtdXmlParser = new VtdXmlParser(mapping);
 
