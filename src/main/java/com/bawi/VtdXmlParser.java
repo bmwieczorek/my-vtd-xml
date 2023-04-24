@@ -1,14 +1,18 @@
 package com.bawi;
 
 import com.ximpleware.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class VtdXmlParser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(VtdXmlParser.class);
 
     public static class FieldXpathMappingEntry {
         String field;
@@ -19,6 +23,28 @@ public class VtdXmlParser {
             this.field = field;
             this.xpath = xpath;
             this.clazz = clazz;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            FieldXpathMappingEntry that = (FieldXpathMappingEntry) o;
+            return Objects.equals(field, that.field) && Objects.equals(xpath, that.xpath) && Objects.equals(clazz, that.clazz);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(field, xpath, clazz);
+        }
+
+        @Override
+        public String toString() {
+            return "FieldXpathMappingEntry{" +
+                    "field='" + field + '\'' +
+                    ", xpath='" + xpath + '\'' +
+                    ", clazz=" + clazz +
+                    '}';
         }
     }
 
@@ -43,11 +69,16 @@ public class VtdXmlParser {
         return parseVTDGen(vtdGen);
     }
 
-    public Map<String, Object> parseXml(String xmlFilePath) throws ParseException {
+    public Map<String, Object> parseXml(String xmlFilePath) {
         VTDGen vtdGen = new VTDGen();
         vtdGen.setDoc(xmlFilePath.getBytes());
-        vtdGen.parse(false);
-        return parseVTDGen(vtdGen);
+        try {
+            vtdGen.parse(false);
+            return parseVTDGen(vtdGen);
+        } catch (ParseException e) {
+            LOGGER.error("Failed to parse", e);
+            throw new RuntimeException(e);
+        }
     }
 
     private Map<String, Object> parseVTDGen(VTDGen vtdGen) {
