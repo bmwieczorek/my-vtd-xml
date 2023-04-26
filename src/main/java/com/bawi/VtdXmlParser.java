@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class VtdXmlParser {
     private static final Logger LOGGER = LoggerFactory.getLogger(VtdXmlParser.class);
@@ -51,7 +52,7 @@ public class VtdXmlParser {
 
         @Override
         public String toString() {
-            return "E{f='" + field + '\'' + ",x='" + xpath + '\'' + ",cl=" + clazz + ",ch=" + children + '}';
+            return "E{f=" + field + ",x=" + xpath + ",cl=" + (clazz != null ? clazz.getSimpleName() : null) + ",ch=" + children + '}';
         }
     }
 
@@ -95,15 +96,17 @@ public class VtdXmlParser {
         mappingEntries.forEach(entry -> {
             try {
                 if (entry.children.size() > 0) {
-                    Map<String, Object> recordAsMap = processRecord(nav, entry);
-                    result.put(entry.field, recordAsMap);
+                    List<Map<String, Object>> recordAsMapList = processRecord(nav, entry);
+                    Object value = recordAsMapList.size() == 0 ? null : recordAsMapList.size() == 1 ? recordAsMapList.get(0) : recordAsMapList;
+                    result.put(entry.field, value);
                 } else if (entry.clazz != null && CustomFieldParser.class.isAssignableFrom(entry.clazz)) {
                     Object value = parseField(nav, entry);
                     result.put(entry.field, value);
                 } else {
-                    String value = extractValue(nav, entry);
                     Function<String, ?> typeTransformationFunction = typeTransformations.get(entry.clazz);
-                    Object transformed = typeTransformationFunction.apply(value);
+                    List<String> values = extractValue(nav, entry);
+                    List<?> transformedValues = values.stream().map(typeTransformationFunction).collect(Collectors.toList());
+                    Object transformed = transformedValues.size() == 0 ? null : transformedValues.size() == 1 ? transformedValues.get(0) : transformedValues;
                     result.put(entry.field, transformed);
                 }
             } catch (XPathParseException e) {
@@ -113,26 +116,27 @@ public class VtdXmlParser {
         return result;
     }
 
-    private Map<String, Object> processRecord(VTDNav nav, Entry entry) throws XPathParseException {
-        Map<String, Object> result = new HashMap<>();
+    private List<Map<String, Object>> processRecord(VTDNav nav, Entry entry) throws XPathParseException {
+        String xpath = entry.xpath;
+        List<Map<String, Object>> results = new ArrayList<>();
         AutoPilot ap = new AutoPilot();
-        ap.selectXPath(entry.xpath);
+        ap.selectXPath(xpath);
         ap.bind(nav);
         try {
-            int cnt = 0;
             while (ap.evalXPath() > 0) { // requires a while loop, not if statement
                 List<Entry> children = entry.children;
-                result = parseVTDGen(nav, children);
-                cnt++;
+                Map<String, Object> recordAsMap = parseVTDGen(nav, children);
+                LOGGER.info("Record: {} => {}", xpath, recordAsMap);
+                results.add(recordAsMap);
             }
-            if (cnt > 1) LOGGER.error("More than one value for entry " + entry);
         } catch (VTDException e) {
             LOGGER.error("Failed to process record for entry " + entry , e);
         }
         finally {
             ap.resetXPath();
         }
-        return result;
+        LOGGER.info("Records: {} => {}", xpath, results);
+        return results;
     }
 
     private static Object parseField(VTDNav nav, Entry entry) throws XPathParseException {
@@ -151,36 +155,35 @@ public class VtdXmlParser {
         return null;
     }
 
-    private static String extractValue(VTDNav nav, Entry entry) {
+    private static List<String> extractValue(VTDNav nav, Entry entry) {
         String xpath = entry.xpath;
-        String result = null;
+        List<String> results = new ArrayList<>();
         AutoPilot ap = new AutoPilot();
         try {
             ap.selectXPath(xpath);
             ap.bind(nav);
 
             if (xpath.startsWith("@") || xpath.contains("/@")) {
-                int i, cnt = 0;
+                int i;
                 while((i = ap.evalXPath()) > 0) { // requires a while loop, not if statement
                     String attrName = nav.toString(i);
                     int attrIdx = nav.getAttrVal(attrName);
                     if (attrIdx != -1) {
-                        result = nav.toString(attrIdx);
+                        String attrValue = nav.toString(attrIdx);
+                        LOGGER.info("AttrValue: {} => {}", xpath, attrValue);
+                        results.add(attrValue);
                     }
-                    cnt++;
                 }
-                if (cnt > 1) LOGGER.error("More than one value for entry " + entry);
             } else {
-                int cnt = 0;
                 while (ap.evalXPath() != -1) { // requires a while loop, not if statement
                     long attrPosition = nav.getContentFragment();
                     if (attrPosition != -1) {
                         int textTokenIdx = nav.getText();
-                        result = nav.toString(textTokenIdx);
+                        String text = nav.toString(textTokenIdx);
+                        LOGGER.info("Text: {} => {}", xpath, text);
+                        results.add(text);
                     }
-                    cnt++;
                 }
-                if (cnt > 1) LOGGER.error("More than one value for entry " + entry);
             }
         }
         catch (VTDException e) {
@@ -190,8 +193,8 @@ public class VtdXmlParser {
             ap.resetXPath();
         }
 
-        LOGGER.info("{} => {}", xpath, result);
-        return result;
+        LOGGER.info("Values: {} => {}", xpath, results);
+        return results;
     }
 
 }

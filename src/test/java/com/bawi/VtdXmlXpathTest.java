@@ -20,6 +20,7 @@ public class VtdXmlXpathTest {
         ap.bind(nav);
         while (ap.evalXPath() > 0) {
             extractValueForXpath(nav, "@id");
+            extract("employee", nav, "@name");
             extract("salary", nav, "basic");
             extract("address", nav, "country");
             extract("address", nav, "country/@code");

@@ -16,6 +16,10 @@ public class DeclarativeParserTest {
             new Entry("college_description", "description"),
             new Entry("staff", "staff[1]", null,
                     List.of(
+                            new Entry("employee_names", "employee/@name"),
+                            new Entry("employees", "employee",  List.of(
+                                    new Entry("id", "@id"),
+                                    new Entry("name", "@name"))),
                             new Entry("description", "description"),
                             new Entry("id", "@id", Integer.class),
                             new Entry("departament", "@dep_name"),
@@ -24,8 +28,8 @@ public class DeclarativeParserTest {
                                     List.of(new Entry("basic", "basic", Integer.class))),
                             new Entry("address", "address", null,
                                     List.of(new Entry("country_name", "country"),
-                                            new Entry("country_code", "country/@code"))))),
-
+                                            new Entry("country_code", "country/@code"))
+            ))),
             new Entry("college_first_staff_dep_name", "staff[1]/@dep_name"),
             new Entry("college_first_staff_dep_name_length", "staff[1]/@dep_name", StringLengthParser.class),
             new Entry("staff_basic_salary_sum", "staff/salary/basic", SumValuesParser.class),
