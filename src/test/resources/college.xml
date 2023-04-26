@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <college id="123">
+    <description>US college</description>
     <staff id="101" dep_name="Admin">
+        <description>Admin Admin</description>
         <employee id="101-01" name="ashish"/>
         <employee id="101-02" name="amit"/>
         <employee id="101-03" name="nupur"/>
@@ -10,8 +12,13 @@
             <medical>10000</medical>
             <provident-fund>10000</provident-fund>
         </salary>
+        <address>
+            <country code="US">United States</country>
+            <region>texas</region>
+        </address>
     </staff>
     <staff id="102" dep_name="HR">
+        <description>HR HR</description>
         <employee id="102-01" name="shikhar"/>
         <employee id="102-02" name="sanjay"/>
         <employee id="102-03" name="ani"/>
@@ -23,6 +30,7 @@
         </salary>
     </staff>
     <staff id="103" dep_name="IT">
+        <description>IT IT</description>
         <employee id="103-01" name="suman"/>
         <employee id="103-02" name="salil"/>
         <employee id="103-03" name="amar"/>

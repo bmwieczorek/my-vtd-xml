@@ -14,28 +14,61 @@ public class VtdXmlXpathTest {
         VTDGen vtdGen = new VTDGen();
         vtdGen.parseFile("src/test/resources/college.xml", false);
         VTDNav nav = vtdGen.getNav();
-        AutoPilot ap = new AutoPilot(nav);
 
-        ap.selectXPath("/college/staff[2]/@dep_name");
-        LOGGER.info("/college/staff[2]/@dep_name = " + ap.evalXPathToString());
-
-        ap.selectXPath("/college/staff"); // selectXPath is heavy operation, reuse it with resetXPath
-        while(ap.evalXPath() != -1) {
-            int idx = nav.getAttrVal("id");
-            String id = nav.toString(idx); // nav.toNormalizedString(idx);
-            LOGGER.info("/college/staff/id = " + id);
+        AutoPilot ap = new AutoPilot();
+        ap.selectXPath("staff[1]"); // selectXPath is heavy operation, reuse it with resetXPath
+        ap.bind(nav);
+        while (ap.evalXPath() > 0) {
+            extractValueForXpath(nav, "@id");
+            extract("salary", nav, "basic");
+            extract("address", nav, "country");
+            extract("address", nav, "country/@code");
+            extractValueForXpath(nav, "description");
         }
-
-        // ap.selectXPath("/college/staff"); // selectXPath is heavy operation, reuse it with resetXPath instead calling select again
-        ap.resetXPath(); // need to reset XPath otherwise it will not enter the evalXPath loop
-        while(ap.evalXPath() != -1) {
-            int idx = nav.getAttrVal("id");
-            String id = nav.toString(idx);
-            LOGGER.info("/college/staff/id = " + id);
-
-            String dep_name = nav.toNormalizedString(nav.getAttrVal("dep_name"));
-            LOGGER.info("/college/staff/dep_name = " + dep_name);
-        }
+        ap.resetXPath();
     }
 
+    private static void extract(String elementXpath, VTDNav nav, String attributeXpath) throws XPathParseException, XPathEvalException, NavException {
+        AutoPilot ap = new AutoPilot();
+        ap.selectXPath(elementXpath);
+        ap.bind(nav);
+        while (ap.evalXPath() > 0) {
+            extractValueForXpath(nav, attributeXpath);
+        }
+        ap.resetXPath();
+    }
+
+    private static void extractValueForXpath(VTDNav nav, String xpath) {
+        String result = null;
+        AutoPilot ap = new AutoPilot();
+        try {
+            ap.selectXPath(xpath);
+            ap.bind(nav);
+
+            if (xpath.startsWith("@") || xpath.contains("/@")) {
+                int i;
+                while ((i = ap.evalXPath()) > 0) {
+                    String attrName = nav.toString(i);
+                    int attrIdx = nav.getAttrVal(attrName);
+                    if (attrIdx != -1) {
+                        result = nav.toString(attrIdx);
+                    }
+                }
+            } else {
+                while (ap.evalXPath() != -1) {
+                    long attrPosition = nav.getContentFragment();
+                    if (attrPosition != -1) {
+                        int textTokenIdx = nav.getText();
+                        result = nav.toString(textTokenIdx);
+                    }
+                }
+            }
+        } catch (VTDException e) {
+            LOGGER.error("Failed to extract value for xpath " + xpath, e);
+        } finally {
+            ap.resetXPath();
+        }
+
+        LOGGER.info("{} => {}", xpath, result);
+    }
 }
