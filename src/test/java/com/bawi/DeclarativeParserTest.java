@@ -1,8 +1,8 @@
 package com.bawi;
 
 import com.bawi.VtdXmlParser.Entry;
-import com.bawi.parser.impl.StringLengthParser;
-import com.bawi.parser.impl.SumValuesParser;
+import com.bawi.parser.StringLengthParser;
+import com.bawi.parser.SumValuesParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +33,6 @@ public class DeclarativeParserTest {
             new Entry("college_first_staff_dep_name", "staff[1]/@dep_name"),
             new Entry("college_first_staff_dep_name_length", "staff[1]/@dep_name", StringLengthParser.class),
             new Entry("staff_basic_salary_sum", "staff/salary/basic", SumValuesParser.class),
-            new Entry("staff_id_attr_sum", "staff/@id", SumValuesParser.class),
             new Entry("staff_id_attr_sum", "staff/@id", SumValuesParser.class)
     );
     private final VtdXmlParser vtdXmlParser = new VtdXmlParser(mapping);
