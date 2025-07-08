@@ -69,7 +69,6 @@ public class VtdXmlXpathTest {
         } finally {
             ap.resetXPath();
         }
-
         LOGGER.info("{} => {}", xpath, result);
     }
 }

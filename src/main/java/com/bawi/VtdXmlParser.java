@@ -1,5 +1,6 @@
 package com.bawi;
 
+import com.bawi.parser.CustomFieldParser;
 import com.ximpleware.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,10 +55,6 @@ public class VtdXmlParser {
         public String toString() {
             return "E{f=" + field + ",x=" + xpath + ",cl=" + (clazz != null ? clazz.getSimpleName() : null) + ",ch=" + children + '}';
         }
-    }
-
-    public interface CustomFieldParser {
-        Object parse(String field, String xpath, AutoPilot ap, VTDNav nav) throws VTDException;
     }
 
     private final Map<Class<?>, Function<String, ?>> typeTransformations = Map.of(
@@ -126,7 +123,7 @@ public class VtdXmlParser {
             while (ap.evalXPath() > 0) { // requires a while loop, not if statement
                 List<Entry> children = entry.children;
                 Map<String, Object> recordAsMap = parseVTDGen(nav, children);
-                LOGGER.info("Record: {} => {}", xpath, recordAsMap);
+//                LOGGER.info("Record: {} => {}", xpath, recordAsMap);
                 results.add(recordAsMap);
             }
         } catch (VTDException e) {
@@ -135,7 +132,7 @@ public class VtdXmlParser {
         finally {
             ap.resetXPath();
         }
-        LOGGER.info("Records: {} => {}", xpath, results);
+//        LOGGER.info("Records: {} => {}", xpath, results);
         return results;
     }
 
@@ -170,7 +167,7 @@ public class VtdXmlParser {
                     int attrIdx = nav.getAttrVal(attrName);
                     if (attrIdx != -1) {
                         String attrValue = nav.toString(attrIdx);
-                        LOGGER.info("AttrValue: {} => {}", xpath, attrValue);
+//                        LOGGER.info("AttrValue: {} => {}", xpath, attrValue);
                         results.add(attrValue);
                     }
                 }
@@ -180,7 +177,7 @@ public class VtdXmlParser {
                     if (attrPosition != -1) {
                         int textTokenIdx = nav.getText();
                         String text = nav.toString(textTokenIdx);
-                        LOGGER.info("Text: {} => {}", xpath, text);
+//                        LOGGER.info("Text: {} => {}", xpath, text);
                         results.add(text);
                     }
                 }
@@ -193,7 +190,7 @@ public class VtdXmlParser {
             ap.resetXPath();
         }
 
-        LOGGER.info("Values: {} => {}", xpath, results);
+//        LOGGER.info("Values: {} => {}", xpath, results);
         return results;
     }
 

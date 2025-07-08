@@ -1,11 +1,10 @@
-package com.bawi.parser.impl;
+package com.bawi.parser;
 
-import com.bawi.VtdXmlParser;
 import com.ximpleware.AutoPilot;
 import com.ximpleware.VTDException;
 import com.ximpleware.VTDNav;
 
-public class SumValuesParser implements VtdXmlParser.CustomFieldParser {
+public class SumValuesParser implements CustomFieldParser {
 
     @Override
     public Object parse(String field, String xpath, AutoPilot ap, VTDNav nav) throws VTDException {
